@@ -3,8 +3,7 @@
 
 void gridding3(int npart,double Lbox,double xpos[],double ypos[],double zpos[],
                double vx[],double vy[],double vz[],double ro[],double mass,double partperpixel,
-               int npixels,double xcenters[], double ycenters[], double zcenters[],
-               double Gx_1D[],double Gy_1D[],double Gz_1D[]){
+               int npixels, double Gx_1D[],double Gy_1D[],double Gz_1D[]){
 
 int i,iii,j,k,n,xindex,yindex,zindex;
 long long int counts;
@@ -34,12 +33,13 @@ for( i=0;i<npixels;i++){
     }
   }
 }
-h1=std::cbrt(partperpixel/npart)*Lbox/4;
+//h1=std::cbrt(partperpixel/npart)*Lbox/4;
+h1=1.003*std::cbrt(3./4./M_PI*partperpixel/npart)*Lbox/2;
 h2=2*h1;
 h2_2=h2*h2;
 for( n=0;n<npart;n++){
   weight=mass/ro[n];
-  if(n%10000==0){ std::cout << "particle " << n << " of " << npart << std::endl;}
+  if(n%100000==0){ std::cout << "particle " << n << " of " << npart << std::endl;}
         //h1=std::max(h[i],dx2);
         //h2=2*h1;
         //h1=dx2;
@@ -100,9 +100,6 @@ for(i=0;i<npixels;i++){
       Gx_1D[iii]=Gx[i][j][k]/norm[i][j][k];
       Gy_1D[iii]=Gy[i][j][k]/norm[i][j][k];
       Gz_1D[iii]=Gz[i][j][k]/norm[i][j][k];
-      xcenters[iii]=D[i];
-      ycenters[iii]=D[j];
-      zcenters[iii]=D[k];
     }
   }
 }
@@ -110,7 +107,7 @@ for(i=0;i<npixels;i++){
 }
 
 void gridding(int npart, double Lbox,double xpos[],double ypos[],double zpos[],double v[],double ro[],
-              double mass,double partperpixel,int npixels,double centers[],double G_1D[]){
+              double mass,double partperpixel,int npixels,double G_1D[]){
 
 int i,iii,j,k,n,xindex,yindex,zindex;
 long long int counts;
@@ -131,7 +128,6 @@ for( i=0;i<npixels;i++){
 }
 
 for( i=0;i<npixels;i++){
-std::cout << i << " of "<< npixels << std::endl;
   for( j=0;j<npixels;j++){
     for( k=0;k<npixels;k++){
       G[i][j][k]=0;
@@ -139,8 +135,8 @@ std::cout << i << " of "<< npixels << std::endl;
     }
   }
 }
-h1=std::cbrt(partperpixel/npart)*Lbox/4;
-h1=std::sqrt(3./2.)/std::cbrt(partperpixel/npart)*Lbox/4;
+//h1=std::cbrt(partperpixel/npart)*Lbox/4;
+//h1=std::sqrt(3./2.)/std::cbrt(partperpixel/npart)*Lbox/4;
 h1=1.003*std::cbrt(3./4./M_PI*partperpixel/npart)*Lbox/2;
 h2=2*h1;
 h2_2=h2*h2;
@@ -200,7 +196,7 @@ for(i=0;i<npixels;i++){
       std::terminate();
   }
       G_1D[iii]=G[i][j][k]/norm[i][j][k];
-      centers[iii]=D[i];
+
     }
   }
 }
@@ -213,9 +209,9 @@ double cubickernel(double r,double h) {
   const double pi=3.141592653589793;
   double W;
   u=r/h;
-  if(u>=0.0 || u<=1.0){
+  if(u>=0.0 && u<=1.0){
     W=1.0/(pi*h*h*h)*(1-1.5e0*u*u*(1.0e0-0.5e0*u)); }
-  else if(u>1.0e0 || u<2.0e0){
+  else if(u>1.0e0 && u<2.0e0){
     W=1.0/(pi*h*h*h)*0.25e0*(2.0e0-u)*(2.0e0-u)*(2.0e0-u) ; }
   else{
     W=0.0; }
