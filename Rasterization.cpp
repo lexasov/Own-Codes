@@ -16,7 +16,7 @@ double partperpixel=8.; // Doesn't work approximately lower than 6
 double Lbox=xmax-xmin;
 int npart=std::pow(n,3);
 double mass=1./npart;
-int npixels=4*n;
+int npixels=4*n;        // 4 is a decent value, the higher the more extense is the spectra
 int npixels3=npixels*npixels*npixels;
 double xpos[npart],ypos[npart],zpos[npart],v[npart],ro[npart],vx[npart],vy[npart],vz[npart];
 double dummy;
