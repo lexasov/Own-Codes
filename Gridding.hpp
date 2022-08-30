@@ -6,8 +6,22 @@
 
 void try_fft()
 {
-  heffte::box3d<> inbox  = {{0, 0, 0}, {0, 1, 1}};
-  heffte::box3d<> outbox  = {{0, 0, 0}, {0, 1, 1}};
+  // Create a 4x4x4 box
+  heffte::box3d<> inbox = {{0, 0, 0}, {3, 3, 3}};
+  heffte::box3d<> outbox = {{0, 0, 0}, {3, 3, 3}};
+
+  // Create 8 2x2x2 boxes
+  // heffte::box3d<> inbox1  = {{0, 0, 0}, {1, 1, 1}};
+  // heffte::box3d<> inbox2  = {{0, 0, 2}, {1, 1, 3}};
+  // heffte::box3d<> inbox3  = {{0, 2, 0}, {1, 3, 1}};
+  // heffte::box3d<> inbox4  = {{2, 0, 0}, {3, 1, 1}};
+  // heffte::box3d<> inbox5  = {{0, 2, 2}, {1, 3, 3}};
+  // heffte::box3d<> inbox6  = {{2, 0, 2}, {3, 1, 3}};
+  // heffte::box3d<> inbox7  = {{2, 2, 0}, {3, 3, 1}};
+  // heffte::box3d<> inbox8  = {{2, 2, 2}, {3, 3, 3}};
+  std::array<int, 3> grid = {2, 2, 2};
+  std::vector<heffte::box3d<>> all_boxes = heffte::split_world(inbox, grid);
+  std::vector<heffte::box3d<>> reordered = heffte::reorder(all_boxes, {1, 2, 0});
 
   heffte::fft3d<heffte::backend::fftw> fft(inbox, outbox, MPI_COMM_WORLD);
 
@@ -17,30 +31,43 @@ void try_fft()
   std::vector<std::complex<double>> output(fft.size_outbox());
 
   // fill the input vector with data that looks like 0, 1, 2, ...
-  // std::iota(input.begin(), input.end(), 0); // put some data in the input
+  std::iota(input.begin(), input.end(), 1); // put some data in the input
   // for(int i = 0; i < 4; i++) {
   //   input.at(i) = i+1;
   // }
 
-  input.at(0) = 1;
-  input.at(1) = 2;
-  input.at(2) = 3;
-  input.at(3) = 4;
+  // input.at(0) = 1;
+  // input.at(1) = 2;
+  // input.at(2) = 3;
+  // input.at(3) = 4;
   // input.at(4) = 1;
   // input.at(5) = 2;
   // input.at(6) = 3;
   // input.at(7) = 4;
 
-  for(int i = 0; i < 4; i++) 
-  {
-    std::cout << input.at(i) << std::endl;
-  }
+  // for(int i = 0; i < 4; i++)
+  // {
+  //   std::cout << input.at(i) << std::endl;
+  // }
 
   // perform a forward DFT
   fft.forward(input.data(), output.data());
 
-  for(int i = 0; i < 4; i++) {
+  auto real_inverse = fft.backward_real(output);
+
+  for (int i = 0; i < 64; i++)
+  {
+    std::cout << input.at(i) << std::endl;
+  }
+  std::cout << "================" << std::endl;
+  for (int i = 0; i < 64; i++)
+  {
     std::cout << output.at(i) << std::endl;
+  }
+  std::cout << "================" << std::endl;
+  for (int i = 0; i < 64; i++)
+  {
+    std::cout << real_inverse.at(i) / 64 << std::endl;
   }
 }
 
@@ -70,8 +97,8 @@ double cubickernel(double r, double h)
 void fft3D(double G_1D[], int npixels)
 {
   int npixels3 = npixels * npixels * npixels;
-  heffte::box3d<> inbox  = {{0, 0, 0}, {npixels-1, npixels-1, npixels-1}};
-  heffte::box3d<> outbox  = {{0, 0, 0}, {npixels-1, npixels-1, npixels-1}};
+  heffte::box3d<> inbox = {{0, 0, 0}, {npixels - 1, npixels - 1, npixels - 1}};
+  heffte::box3d<> outbox = {{0, 0, 0}, {npixels - 1, npixels - 1, npixels - 1}};
 
   // define the heffte class and the input and output geometry
   heffte::fft3d<heffte::backend::fftw> fft(inbox, outbox, MPI_COMM_WORLD);
@@ -83,14 +110,16 @@ void fft3D(double G_1D[], int npixels)
 
   // fill the input vector with data that looks like 0, 1, 2, ...
   // std::iota(input.begin(), input.end(), 0); // put some data in the input
-  for(int i = 0; i < npixels3; i++) {
+  for (int i = 0; i < npixels3; i++)
+  {
     input.at(i) = G_1D[i];
   }
 
   // perform a forward DFT
   fft.forward(input.data(), output.data());
 
-  for(int i = 0; i < npixels3; i++) {
+  for (int i = 0; i < npixels3; i++)
+  {
     G_1D[i] = abs(output.at(i));
   }
 }
@@ -166,7 +195,7 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
       {
         zindex = i;
       }
-      int z = std::min(std::abs(zpos[n] - D[zindex]), std::abs(zpos[n] + Lbox - D[zindex]));
+      double z = std::min(std::abs(zpos[n] - D[zindex]), std::abs(zpos[n] + Lbox - D[zindex]));
       z = z * z;
       if (z > h2_2)
         continue;
@@ -191,7 +220,7 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
         {
           xindex = j;
         }
-        int x = std::min(std::abs(xpos[n] - D[xindex]), std::abs(xpos[n] + Lbox - D[xindex]));
+        double x = std::min(std::abs(xpos[n] - D[xindex]), std::abs(xpos[n] + Lbox - D[xindex]));
         x = x * x;
         if (x > s1_2)
           continue;
@@ -215,8 +244,8 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
             yindex = k;
           }
 
-          int y = std::min(std::abs(ypos[n] - D[yindex]), std::abs(ypos[n] + Lbox - D[yindex]));
-          int r = std::sqrt(x + y * y + z);
+          double y = std::min(std::abs(ypos[n] - D[yindex]), std::abs(ypos[n] + Lbox - D[yindex]));
+          double r = std::sqrt(x + y * y + z);
 
           if (r < h2)
           {
@@ -231,7 +260,7 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
     }
   }
 
-  
+
 #pragma omp parallel for reduction(+:counts_reduced)
   for (int i = 0; i < npart; i++)
   {
