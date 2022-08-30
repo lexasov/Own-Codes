@@ -270,6 +270,8 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
   std::cout << "number of particles contributing to a pixel: " << counts_reduced * 1.0 / npixels / npixels / npixels << std::endl;
   start = std::chrono::steady_clock::now();
 
+  double average = 0.0;
+
 #pragma omp parallel for collapse(2)
   for (int i = 0; i < npixels; i++)
   {
@@ -284,9 +286,12 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
           std::terminate();
         }
         G_1D[iii] = G[i][j][k] / norm[i][j][k];
+        average += G_1D[iii]*G_1D[iii];
       }
     }
   }
+
+  std::cout << "root mean square: " << sqrt((average/npixels3)) << std::endl;
 
   // fft3D(G_1D, npixels);
  
