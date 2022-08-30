@@ -23,15 +23,29 @@ int main(int argc, char** argv)
   double mass = 1. / npart;
   int npixels = 2 * n; // updated to 2 since Axel said it is enough
   int npixels3 = npixels * npixels * npixels;
-  double xpos[npart], ypos[npart], zpos[npart], v[npart], ro[npart], vx[npart], vy[npart], vz[npart];
+  // double xpos[npart], ypos[npart], zpos[npart], v[npart], ro[npart], vx[npart], vy[npart], vz[npart];
+  double *xpos, *ypos, *zpos, *v, *ro, *vx, *vy, *vz;
   double dummy;
   // double h[npart],u[npart],radius[npart],curlv[npart],p[npart],cs[npart],divv[npart], ax[npart], ay[npart], az[npart];
   // double Gvx[npixels3],Gvy[npixels3],Gvz[npixels3];
   double Gv[npixels3];
 
+  int Kmax=std::ceil(std::sqrt(3)*npixels*0.5);
+  double E[Kmax],k_center[Kmax];
+
   std::ifstream infile;
   std::ofstream v_xyz;
   std::ofstream vfile;
+
+  // Allocate memory
+  xpos = new double[npart];
+  ypos = new double[npart];
+  zpos = new double[npart];
+  v    = new double[npart];
+  ro   = new double[npart];
+  vx   = new double[npart];
+  vy   = new double[npart];
+  vz   = new double[npart];
 
   infile.open("sphexa_100_18s.txt"); // N=1024000
   // v_xyz.open("v_xyz.txt",std::ios::trunc);
@@ -95,6 +109,15 @@ int main(int argc, char** argv)
         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
         << " ms" << std::endl;
 #endif
+
+  delete[] xpos;
+  delete[] ypos;
+  delete[] zpos;
+  delete[] v;
+  delete[] ro;
+  delete[] vx;
+  delete[] vy;
+  delete[] vz;
 
   MPI_Finalize();
 }
