@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <chrono>
 #include "Gridding.hpp"
+#include "shell_averaging.hpp"
 //#include "curlv.hpp"
 
 
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
   double E[Kmax],k_center[Kmax];
 
   std::ifstream infile;
-  std::ofstream v_xyz;
+  std::ofstream spectra;
   std::ofstream vfile;
 
   // Allocate memory
@@ -50,6 +51,7 @@ int main(int argc, char** argv)
   infile.open("sphexa_100_18s.txt"); // N=1024000
   // v_xyz.open("v_xyz.txt",std::ios::trunc);
   vfile.open("v_sphexa_100_18s_2.txt", std::ios::trunc);
+  spectra.open("v_sphexa_spectra.txt", std::ios::trunc);
 
   if (!infile.is_open())
   {
@@ -95,14 +97,27 @@ int main(int argc, char** argv)
   std::cout << "Writing in file..." << std::endl;
 
   start = chrono::steady_clock::now();
-  for (int k = 0; k < npixels3; k++)
+  int kstart=0;
+  int kend=npixels3;
+  kstart=npixels/2*(npixels*npixels);
+  kend=(npixels/2+1)*(npixels*npixels);
+  for (int k = kstart; k < kend; k++)
   {
     if (k % 1000000 == 0)
     {
-      std::cout << "cell " << k << " of " << npixels3 << std::endl;
+      std::cout << "cell " << k << " of " << npixels*npixels << std::endl;
     }
-    // v_xyz << std::setprecision(16) << std::scientific <<  Gvx[k] << "  " << Gvy[k] << "   " << Gvz[k] << "   " << std::endl;
     vfile << std::setprecision(8) << std::scientific << Gv[k] << std::endl;
+    //divfile << std::setprecision(8) << std::scientific << Gv2[k] << std::endl;
+    //curlfile << std::setprecision(8) << std::scientific << Gv3[k] << std::endl;
+    //rhofile << std::setprecision(8) << std::scientific << Gv4[k] << std::endl;
+  }
+
+  fft3D(Gv, npixels);
+  shells(Gv,npixels,E,k_center);
+
+  for(int i = 0; i < Kmax; i++){
+    spectra << std::setprecision(8) << std::scientific << k_center[i] << ' ' << E[i] << std::endl;
   }
   end = chrono::steady_clock::now();
   std::cout << "Writing to file took: "
