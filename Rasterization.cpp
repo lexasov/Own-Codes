@@ -52,8 +52,9 @@ int main(int argc, char** argv)
   // Gv   = new double[sizecube];
   Gv = (double*)malloc(npixels*npixels*npixels*sizeof(double));
 
-  infile.open("sphexa_1000_18s_test.txt"); // N=1024000
-  // v_xyz.open("v_xyz.txt",std::ios::trunc);
+  // infile.open("sphexa_100_18s.txt");
+  // vfile.open("v_sphexa_100_18s_2.txt", std::ios::trunc);
+  infile.open("sphexa_1000_18s_test.txt");
   vfile.open("v_sphexa_1000_18s_2.txt", std::ios::trunc);
   spectra.open("v_sphexa_spectra.txt", std::ios::trunc);
 

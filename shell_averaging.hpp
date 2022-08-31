@@ -8,8 +8,7 @@ void shells(double w[], int npixels, double E[], double k_center[])
   int Kmax = std::ceil(std::sqrt(3.0) * (0.5 * npixels));
   // double E[Kmax],k_center[Kmax];
   int Kx, Ky, Kz, K, iii;
-  int npixels3 = npixels * npixels * npixels;
-  double y_N3 = 1. / npixels3;
+  double y_N3 = 1. / (npixels * npixels * npixels);
   int counts[Kmax];
 
   for (int i = 0; i < Kmax; i++)
