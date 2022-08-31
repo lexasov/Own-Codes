@@ -13,7 +13,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
-  int n = 100;
+  int n = 1000;
   double xmin = 0.0, xmax = 1.0;
   double halfbox = 0.5 * (xmax - xmin); // Define parameters
   bool centered_at_0 = true;
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   int npart = std::pow(n, 3);
   double mass = 1. / npart;
   int npixels = 2 * n; // updated to 2 since Axel said it is enough
-  int npixels3 = npixels * npixels * npixels;
+  uint64_t npixels3 = npixels * npixels * npixels;
   // double xpos[npart], ypos[npart], zpos[npart], v[npart], ro[npart], vx[npart], vy[npart], vz[npart];
   double *xpos, *ypos, *zpos, *v, *ro, *vx, *vy, *vz;
   double dummy;
@@ -38,6 +38,8 @@ int main(int argc, char** argv)
   std::ofstream spectra;
   std::ofstream vfile;
 
+  std::size_t sizecube = npixels*npixels*npixels;
+
   // Allocate memory
   xpos = new double[npart];
   ypos = new double[npart];
@@ -47,11 +49,12 @@ int main(int argc, char** argv)
   vx   = new double[npart];
   vy   = new double[npart];
   vz   = new double[npart];
-  Gv   = new double[npixels3];
+  // Gv   = new double[sizecube];
+  Gv = (double*)malloc(npixels*npixels*npixels*sizeof(double));
 
-  infile.open("sphexa_100_18s.txt"); // N=1024000
+  infile.open("sphexa_1000_18s_test.txt"); // N=1024000
   // v_xyz.open("v_xyz.txt",std::ios::trunc);
-  vfile.open("v_sphexa_100_18s_2.txt", std::ios::trunc);
+  vfile.open("v_sphexa_1000_18s_2.txt", std::ios::trunc);
   spectra.open("v_sphexa_spectra.txt", std::ios::trunc);
 
   if (!infile.is_open())
@@ -68,9 +71,10 @@ int main(int argc, char** argv)
     // infile.ignore(13*29); // SPHYNX
     // infile >>  xpos[k] >> ypos[k] >> zpos[k] >> h[k] >>  ro[k] >> vx[k] >> vy[k] >> vz[k] >> cs[k] >> p[k] >> u[k] >> neighbours[k]
     //        >> divv[k] >> curlv[k] >> ax[k] >> ay[k] >> az[k]; //sphexa
-    infile >> xpos[k] >> ypos[k] >> zpos[k] >> dummy >> ro[k] >> vx[k] >> vy[k] >> vz[k] >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy; // sphexa
+    // infile >> xpos[k] >> ypos[k] >> zpos[k] >> dummy >> ro[k] >> vx[k] >> vy[k] >> vz[k] >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy; // sphexa
+    infile >> xpos[k] >> ypos[k] >> zpos[k] >> v[k] >> ro[k];
     // infile >>  xpos[k] >> ypos[k] >> zpos[k] >> u[k] >> ro[k] >> vx[k] >> vy[k] >> vz[k] ; //sphexa
-    v[k] = std::sqrt(vx[k] * vx[k] + vy[k] * vy[k] + vz[k] * vz[k]);
+    // v[k] = std::sqrt(vx[k] * vx[k] + vy[k] * vy[k] + vz[k] * vz[k]);
 
     if (centered_at_0)
     {
@@ -99,8 +103,8 @@ int main(int argc, char** argv)
   std::cout << "Writing in file..." << std::endl;
 
   start = chrono::steady_clock::now();
-  int kstart=0;
-  int kend=npixels3;
+  uint64_t kstart=0;
+  uint64_t kend=npixels3;
   kstart=npixels/2*(npixels*npixels);
   kend=(npixels/2+1)*(npixels*npixels);
   for (int k = kstart; k < kend; k++)

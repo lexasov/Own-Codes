@@ -96,7 +96,7 @@ double cubickernel(double r, double h)
 
 void fft3D(double G_1D[], int npixels)
 {
-  int npixels3 = npixels * npixels * npixels;
+  uint64_t npixels3 = npixels * npixels * npixels;
   heffte::box3d<> inbox = {{0, 0, 0}, {npixels - 1, npixels - 1, npixels - 1}};
   heffte::box3d<> outbox = {{0, 0, 0}, {npixels - 1, npixels - 1, npixels - 1}};
 
@@ -110,7 +110,7 @@ void fft3D(double G_1D[], int npixels)
 
   // fill the input vector with data that looks like 0, 1, 2, ...
   // std::iota(input.begin(), input.end(), 0); // put some data in the input
-  for (int i = 0; i < npixels3; i++)
+  for (uint64_t i = 0; i < npixels3; i++)
   {
     input.at(i) = G_1D[i];
   }
@@ -118,7 +118,7 @@ void fft3D(double G_1D[], int npixels)
   // perform a forward DFT
   fft.forward(input.data(), output.data());
 
-  for (int i = 0; i < npixels3; i++)
+  for (uint64_t i = 0; i < npixels3; i++)
   {
     G_1D[i] = abs(output.at(i));
   }
@@ -127,10 +127,9 @@ void fft3D(double G_1D[], int npixels)
 void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[], double v[], double ro[],
               double mass, double partperpixel, int npixels, double G_1D[])
 {
-  long long int counts[npart] = {0};
-  long long int counts_reduced = 0;
+  int64_t counts[npart] = {0};
+  int64_t counts_reduced = 0;
   double dx, dx2, ydx, W, weight, h1, h2, h2_2, s1, s1_2, s2;
-  int npixels3 = npixels * npixels * npixels;
   double D[npixels], norm[npixels][npixels][npixels];
   double G[npixels][npixels][npixels];
 
@@ -279,10 +278,10 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
     {
       for (int k = 0; k < npixels; k++)
       {
-        int iii = i + npixels * (j + npixels * k);
+        uint64_t iii = i + npixels * (j + npixels * k);
         if (norm[i][j][k] == 0)
         {
-          std::cout << "Failed Rasterization" << std::endl;
+          std::cout << "Failed Rasterization in iteration i = " << i << ", j = " << j << ", k = " << k << std::endl;
           std::terminate();
         }
         G_1D[iii] = G[i][j][k] / norm[i][j][k];
@@ -291,7 +290,7 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
     }
   }
 
-  std::cout << "root mean square: " << sqrt((average/npixels3)) << std::endl;
+  std::cout << "root mean square: " << sqrt((average/(npixels*npixels*npixels))) << std::endl;
 
   // fft3D(G_1D, npixels);
  
