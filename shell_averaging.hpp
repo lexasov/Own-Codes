@@ -7,7 +7,8 @@ void shells(double w[], int npixels, double E[], double k_center[])
   int halfnpixels = std::floor(npixels / 2);
   int Kmax = std::ceil(std::sqrt(3.0) * (0.5 * npixels));
   // double E[Kmax],k_center[Kmax];
-  int Kx, Ky, Kz, K, iii;
+  int Kx, Ky, Kz, K;
+  uint64_t iii;
   double y_N3 = 1. / (npixels * npixels * npixels);
   int counts[Kmax];
 
@@ -15,7 +16,7 @@ void shells(double w[], int npixels, double E[], double k_center[])
   {
     E[i] = 0;
     counts[i] = 0;
-    k_center[i] = 2 * M_PI * std::cbrt(0.5 * ((i + 1) * (i + 1) * (i + 1) + i * i * i));
+    k_center[i] = std::cbrt(0.5 * ((i + 1) * (i + 1) * (i + 1) + i * i * i));
   }
 
   for (int i = 0; i < npixels; i++)

@@ -169,7 +169,7 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
   h2_2 = h2 * h2;
 
 #pragma omp parallel for firstprivate (s1_2, s1, s2, weight, W)
-  for (int n = 0; n < npart; n++)
+  for (uint64_t n = 0; n < npart; n++)
   {
     weight = mass / ro[n];
     // if (n % 100000 == 0)
@@ -261,7 +261,7 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
 
 
 #pragma omp parallel for reduction(+:counts_reduced)
-  for (int i = 0; i < npart; i++)
+  for (uint64_t i = 0; i < npart; i++)
   {
     counts_reduced += counts[i];
   }
@@ -293,11 +293,10 @@ void gridding(int npart, double Lbox, double xpos[], double ypos[], double zpos[
   std::cout << "root mean square: " << sqrt((average/(npixels*npixels*npixels))) << std::endl;
 
   // fft3D(G_1D, npixels);
- 
+
   end = std::chrono::steady_clock::now();
 
   std::cout << "Rasterization took: "
         << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
         << " ms" << std::endl;
 }
-
